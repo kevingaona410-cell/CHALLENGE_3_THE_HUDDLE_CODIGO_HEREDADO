@@ -6,31 +6,35 @@ from tkinter import ttk
 import heapq  # Para el algoritmo de búsqueda A*
 import random  # Para generar terrenos aleatorios
 
-# CONSTANTES DE TERRENO
-# Define los tipos de terreno que pueden existir en el mapa
-CAMINO = 0      
-EDIFICIO = 1    
-AGUA = 2        
-BLOQUEADO = 3   
+# CONFIGURACIÓN DE VENTANA PRINCIPAL
+# Crea la ventana principal de la aplicación
+root = tk.Tk()
+root.title("Calculadora de Rutas")
+root.geometry("500x500")
+root.configure(bg="#DBDBDB")
 
-# Variables para almacenar inicio y fin de ruta
-INICIO = None
-FIN = None
+# Función para generar un mapa aleatorio 
+def generar_mundo():
+    global terreno
 
-posibles_terrenos = [CAMINO, EDIFICIO, AGUA, BLOQUEADO]
+    # Obtiene las dimensiones del mapa desde los campos de entrada
+    filas = filas_var.get()
+    columnas = columnas_var.get()
 
+    # Valida las dimensiones 
+    if filas <= 0 or columnas <= 0:
+        messagebox.showerror(
+            "Error",
+            "Filas y columnas deben ser mayores que 0"
+        )
+        return
 
-# el costo de movimiento por tipo de terreno
-COSTOS = { 
-    CAMINO: 1,              # Costo bajo, fácil de transitar
-    AGUA: 4,                # Costo alto, difícil de transitar
-    BLOQUEADO: float("inf"),   # Imposible de transitar
-    EDIFICIO: float("inf")     # Imposible de transitar
-}
-
-# Variable para almacenar el número de filas y columnas del mapa
-filas_var = tk.IntVar()
-columnas_var = tk.IntVar()
+    # Genera una matriz con terrenos aleatorios
+    terreno = [
+        [random.choice(posibles_terrenos) for _ in range(columnas)]
+        for _ in range(filas)
+    ]
+    dibujar_mundo()
 
 # Función para visualizar el camino encontrado sobre el mapa
 def mostrar_camino(camino):
@@ -77,5 +81,9 @@ def reconstruir_camino(padre, INICIO, FIN):
     # si no se llegó al inicio, retorna None
     return None
 
+if Mapa.validar_estado():
+    # Calcula el camino más corto usando el algoritmo A*
+    camino = buscador.camino_corto(mapa)
+    interfaz.mostrar_camino(camino)
 # BUCLE PRINCIPAL - Inicia la aplicación
 root.mainloop()

@@ -1,3 +1,6 @@
+
+
+
 class Mapa:
     # CONSTANTES DE TERRENO
     CAMINO, EDIFICIO, AGUA, BLOQUEADO = 0,1,2,3 

@@ -1,10 +1,8 @@
 
-# CONFIGURACIÓN DE VENTANA PRINCIPAL
-# Crea la ventana principal de la aplicación
-root = tk.Tk()
-root.title("Calculadora de Rutas")
-root.geometry("500x500")
-root.configure(bg="#DBDBDB")
+# Variable para almacenar el número de filas y columnas del mapa
+filas_var = tk.IntVar()
+columnas_var = tk.IntVar()
+
 
 # COLORES de terreno
 COLORES = {
@@ -78,3 +76,70 @@ frame_mapa = tk.Frame(
 )
 frame_mapa.pack(padx=10, pady=10)
 
+
+# Función para visualizar el mapa en la interfaz gráfica
+def dibujar_mundo():
+    # Elimina todos los widgets previos del frame del mapa
+    for widget in frame_mapa.winfo_children():
+        widget.destroy()
+
+    
+    for i, fila in enumerate(terreno):
+        for j, valor in enumerate(fila):
+            # Determina el color y símbolo según si es inicio, fin u otro terreno
+            if INICIO == (i,j):
+                color = "#4cad50"  # Verde para inicio
+                texto = "S"
+            elif FIN == (i,j):
+                color = "#FFA6A6"  # Rojo para fin
+                texto = "E"
+            else:
+                color = COLORES.get( valor, "#000000")
+                texto = SIMBOLOS.get( valor, "#000000")
+
+            # Crea un label (celda) para representar el terreno
+            lbl = tk.Label(
+                frame_mapa,
+                text= texto,
+                bg=color,
+                fg= "black",
+                font=("Consolas", 12, "bold"),
+                width=4,
+                height=2,
+                relief="ridge",
+                borderwidth=1
+            )
+            lbl.grid(row=i, column=j)
+            # Vincula clic izquierdo para seleccionar inicio/fin
+            lbl.bind("<Button-1>", lambda e, x=i, y=j: seleccionar_celda(e, x, y))
+            # Vincula clic derecho para bloquear/desbloquear celdas
+            lbl.bind("<Button-3>", lambda e, x=i, y=j: bloquear_celda(x, y))
+
+
+# BOTONES DE CONTROL - Interfaz para ejecutar las funciones principales
+# Botón para generar un mundo aleatorio
+ttk.Button(
+    frame_controles,
+    text="Generar Mundo",
+    command=generar_mundo
+).grid(row=0, column=4, padx=10)
+
+# Botón para buscar la ruta más corta entre inicio y fin
+ttk.Button(
+    frame_controles, 
+    text="Buscar Ruta",
+    command=ruta_existe
+).grid(row=0, column=5, padx=10)
+
+# Botón para limpiar el camino y volver a mostrar solo el mapa
+ttk.Button(
+    frame_controles, 
+    text="Limpiar Camino", 
+    command=dibujar_mundo
+).grid(row=1, column=5, padx=10)
+
+resultado = mapa.seleccionar_celda(x,y)
+if resultado == True:
+    dibujar_mapa()
+else: 
+    messagebox.showwarning("Solo puedes seleccionar en los camino libres")
