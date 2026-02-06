@@ -1,31 +1,38 @@
-
-
-
 class Mapa:
     # CONSTANTES DE TERRENO
-    CAMINO, EDIFICIO, AGUA, BLOQUEADO = 0,1,2,3 
+    camino, edificio, agua, bloqueado = 0,1,2,3
     # Define los tipos de terreno que pueden existir en el mapa
-    posibles_terrenos = [CAMINO, EDIFICIO, AGUA, BLOQUEADO]
+    posibles_terrenos = [camino, edificio, agua, bloqueado]
 
-    def __init__(self, terreno, filas, columnas, INICIO, FIN, COSTOS=None):
+    # el costo de movimiento por tipo de terreno
+    costos = {
+        camino: 1,              # Costo bajo, fácil de transitar
+        agua: 4,                # Costo alto, difícil de transitar
+        bloqueado: float("inf"),   # Imposible de transitar
+        edificio: float("inf")     # Imposible de transitar
+        }
+
+    def __init__(self):
         # Matriz que representa el terreno/mapa de la aplicación
-        self.terreno = terreno
-        self.filas = filas
-        self.columnas = columnas
+        self.filas = 0
+        self.columnas = 0
+        self.terreno = []
         # Variables para almacenar inicio y fin de ruta
-        self.INICIO = INICIO
-        self.FIN = FIN
+        self.inicio = None
+        self.fin = None
 
-        if COSTOS:
-            self.COSTOS = COSTOS
-        else:
-            # el costo de movimiento por tipo de terreno
-            self.COSTOS = { 
-                self.CAMINO: 1,              # Costo bajo, fácil de transitar
-                self.AGUA: 4,                # Costo alto, difícil de transitar
-                self.BLOQUEADO: float("inf"),   # Imposible de transitar
-                self.EDIFICIO: float("inf")     # Imposible de transitar
-            }
+    #metodo de polimorfismo
+    def generar_mundo(self, f, c):
+        self.filas = f
+        self.columnas = c
+        self.inicio = None
+        self.fin = None
+        import random
+        self.terreno = [
+            [random.choice(self.posibles_terrenos) for _ in range(c)]
+            for _ in range(f)
+        ]
+
 
     # Función para validar si una posición está dentro de los límites del mapa
     def movimiento_valido(self, x, y):
@@ -40,33 +47,34 @@ class Mapa:
     def validar_estado(self):
         # Verifica que se haya generado un mapa
         if not self.terreno:
-            raise ValueError(f"Error logico: El mapa, no existe.")
+            return False
             # Verifica que se hayan seleccionado puntos de inicio y fin
-        if self.INICIO is None or self.FIN is None:
+        if self.inicio is None or self.fin is None:
             raise ValueError(f"Error logico: Inicio o Fin no existe.")
         return True
         
     # Función para seleccionar/deseleccionar puntos de inicio y fin
     def seleccionar_celda(self,x,y):
         
-        if not self.INICIO:      # Si no hay inicio marcado, la celda actual será el inicio
-            self.INICIO = (x, y)
-        elif not self.FIN:       # Si hay inicio pero no fin, la celda actual será el fin
-            self.FIN = (x, y)
-        elif self.INICIO == (x, y):  # Si ya hay inicio y se hace clic en él, lo deselecciona
-            self.INICIO = None
-        elif self.FIN == (x, y):     # Si ya hay fin y se hace clic en él, lo deselecciona
-            self.FIN = None
-        elif self.terreno[x][y] != self.CAMINO: # Si la celda no es transitable, muestra error
-            raise ValueError("Invalido", "Solo puedes seleccionar caminos libres")
+        if not self.inicio:      # Si no hay inicio marcado, la celda actual será el inicio
+            self.inicio = (x, y)
+        elif not self.fin:       # Si hay inicio pero no fin, la celda actual será el fin
+            self.fin = (x, y)
+        elif self.inicio == (x, y):  # Si ya hay inicio y se hace clic en él, lo deselecciona
+            self.inicio = None
+        elif self.fin == (x, y):     # Si ya hay fin y se hace clic en él, lo deselecciona
+            self.fin = None
+        elif self.terreno[x][y] != self.camino: # Si la celda no es transitable, muestra error
+            return False
         else:                   # Si ambos están marcados, reemplaza el fin
-            self.FIN = (x, y)
+            self.fin = (x, y)
         return True
     # Función para alternar entre bloqueado y desbloqueado con clic derecho
     def bloquear_celda(self, x, y):
         # Si es camino o agua, lo convierte a edificio 
-        if self.terreno[x][y] in (self.CAMINO, self.AGUA):
-            self.terreno[x][y] = self.EDIFICIO
+        if self.terreno[x][y] in (self.camino, self.agua):
+            self.terreno[x][y] = self.edificio
         # Si es bloqueado o edificio, lo convierte a camino
-        elif self.terreno[x][y] in (self.BLOQUEADO, self.EDIFICIO):
-            self.terreno[x][y] = self.CAMINO
+        elif self.terreno[x][y] in (self.bloqueado, self.edificio):
+            self.terreno[x][y] = self.camino
+        return True
